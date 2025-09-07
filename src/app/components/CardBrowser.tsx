@@ -31,7 +31,6 @@ export default function CardBrowser() {
     offset: ["start start", "end end"],
   });
 
-  // Init Lenis smooth scrolling
   useEffect(() => {
     const l = new Lenis({
       duration: 1.2,
@@ -46,24 +45,17 @@ export default function CardBrowser() {
     return () => l.destroy();
   }, []);
 
-  // Scroll and show a card
-  // Inside CardBrowser
-
-  // Scroll and show a card
   const scrollToCard = (index: number) => {
     if (!lenis || !cardRefs.current[index]) return;
     const top = cardRefs.current[index]!.offsetTop;
     lenis.scrollTo(top);
 
-    // Clear previous messages when selecting a new card
     setMessages(["🔮 is typing..."]);
     setSelectedCard(TarotCards[index]);
 
-    // Trigger AI prompt
     generateTarotMessage(TarotCards[index]);
   };
 
-  // Optional: AI tarot message
   const generateTarotMessage = async (card: (typeof TarotCards)[0]) => {
     const prompt = `${SYSTEM_PROMPT}\n\nThe user has drawn "${card.name}". 
   Comment on the ${card.description}. Translate it to modern English in 1 sentence like you were born and raised in the streets.`;
@@ -73,7 +65,7 @@ export default function CardBrowser() {
         [{ role: "user", parts: [{ text: prompt }] }],
         prompt
       );
-      setMessages([`🔮 ${response}`]); // Only show the latest message
+      setMessages([`🔮 ${response}`]);
     } catch {
       setMessages(["⚠️ Something went wrong with the reading."]);
     } finally {
