@@ -46,7 +46,7 @@ type TypingTextProps = Omit<React.ComponentProps<"span">, "children"> & {
 
 function TypingText({
   ref,
-  duration = 50,
+  duration = 25,
   delay = 0,
   inView = false,
   inViewMargin = "0px",
