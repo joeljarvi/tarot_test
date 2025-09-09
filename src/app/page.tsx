@@ -1,9 +1,9 @@
-import CardBrowser from "./components/CardBrowser";
+import Tarot from "./components/Tarot";
 
 export default function Home() {
   return (
-    <div className="p-4">
-      <CardBrowser />
+    <div className="bg-black">
+      <Tarot />
     </div>
   );
 }

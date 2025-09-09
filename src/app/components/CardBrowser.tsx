@@ -9,8 +9,8 @@ import { sendMessage } from "../actions/ai";
 import { TypingText } from "@/components/animate-ui/text/typing";
 
 const SYSTEM_PROMPT = `You are a mystical tarot reader. 
-Always respond in the tone of a streetwise oracle who explains mystical tarot wisdom in modern English. 
-Be concise, vivid, and a bit dramatic.`;
+Always respond in the tone of a streetwise oracle who explains mystical tarot wisdom in modern Swedish. 
+Be concise, vivid, and a bit dramatic. But maximum 3 sentences and no **`;
 
 function FlippingCard({
   onReveal,
@@ -26,14 +26,12 @@ function FlippingCard({
 
   const handleClick = () => {
     if (!isFlipped) {
-      // Flip to front → reveal a random tarot card
       const randomCard =
         TarotCards[Math.floor(Math.random() * TarotCards.length)];
       setFrontCard(randomCard);
       setIsFlipped(true);
       onReveal(randomCard);
     } else {
-      // Flip back → hide and clear AI messages
       setIsFlipped(false);
       setFrontCard(null);
       onHide();
@@ -42,26 +40,21 @@ function FlippingCard({
 
   return (
     <motion.div
-      style={{
-        width: "300px",
-        height: "500px",
-        perspective: "1000px",
-      }}
+      style={{ width: 300, height: 500, perspective: 1000 }}
       onClick={handleClick}
+      className="cursor-pointer"
     >
       <motion.div
-        whileHover={{ scale: 1.1 }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
         style={{
           width: "100%",
           height: "100%",
           position: "relative",
           transformStyle: "preserve-3d",
         }}
-        className="cursor-pointer"
       >
-        {/* Back Side */}
+        {/* Back */}
         <motion.div
           style={{
             position: "absolute",
@@ -71,16 +64,14 @@ function FlippingCard({
           }}
         >
           <Image
-            src={"/images/tarot-back-3.png"}
+            src="/images/tarot-back-3.png"
             alt="tarot-back"
             fill
-            priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover rounded-2xl border-6 border-blue-900"
           />
         </motion.div>
 
-        {/* Front Side */}
+        {/* Front */}
         <motion.div
           style={{
             position: "absolute",
@@ -95,8 +86,6 @@ function FlippingCard({
               src={frontCard.image}
               alt={frontCard.name}
               fill
-              loading="lazy"
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover rounded-2xl border-6 border-blue-900"
             />
           )}
@@ -106,11 +95,11 @@ function FlippingCard({
   );
 }
 
-function ProgressBar() {
-  // Track vertical scroll progress (0 → 1)
-  const { scrollYProgress, scrollXProgress } = useScroll();
-  const [isDesktop, setIsDesktop] = useState(true);
-
+function ProgressBar({
+  scrollYProgress,
+}: {
+  scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"];
+}) {
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -118,13 +107,11 @@ function ProgressBar() {
   });
 
   return (
-    <div className="fixed top-0 left-0 right-0 p-4 flex items-center justify-center ">
-      <motion.div className=" h-2 bg-blue-100  z-50  w-xl rounded-full">
+    <div className="fixed bottom-0 left-0 right-0 p-4 flex items-center justify-center">
+      <motion.div className="h-2 bg-neutral-800 z-50 w-xl rounded-full">
         <motion.div
-          className="h-2 bg-blue-600 origin-left"
-          style={{
-            scaleX,
-          }}
+          className="h-2 bg-blue-800 origin-left rounded-l-full rounded-r-full"
+          style={{ scaleX }}
         />
       </motion.div>
     </div>
@@ -136,6 +123,7 @@ export default function CardBrowser() {
   const [messages, setMessages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Smooth scrolling
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -152,24 +140,35 @@ export default function CardBrowser() {
     return () => lenis.destroy();
   }, []);
 
+  // Framer Motion scroll hook — always called
   const { scrollYProgress } = useScroll({
-    target: containerRef, // ← pass the ref, not current
+    target: containerRef,
     offset: ["start start", "end end"],
   });
 
+  useEffect(() => {
+    if (!loading && messages.length === 0) {
+      setMessages([
+        "Sådärja, skrolla genom kortleken och klicka på ett kort vetja!",
+      ]);
+    }
+  }, [loading]);
+
   const generateTarotMessage = async (card: (typeof TarotCards)[0]) => {
     const prompt = `${SYSTEM_PROMPT}\n\nThe user has drawn "${card.name}". 
-    Comment on the ${card.description}. Translate it to modern English in 1 sentence like you were born and raised in the streets.`;
+Comment on the ${card.description}. Translate it to modern Swedish and make it in 3-4 sentences like you were born and raised in the streets of Södermalm. And never use ** and at the end of your message, instruct the user to draw a new card`;
 
     setLoading(true);
+    setMessages([``]);
+
     try {
       const response = await sendMessage(
         [{ role: "user", parts: [{ text: prompt }] }],
         prompt
       );
-      setMessages([`🔮 ${response}`]);
+      setMessages([`Tarot-göken: ${response}`]);
     } catch {
-      setMessages(["⚠️ Something went wrong with the reading."]);
+      setMessages(["⚠️ Nåt gick snett."]);
     } finally {
       setLoading(false);
     }
@@ -177,12 +176,11 @@ export default function CardBrowser() {
 
   return (
     <>
-      <ProgressBar />
+      <ProgressBar scrollYProgress={scrollYProgress} />
       <div
         ref={containerRef}
-        className={`relative h-[${
-          TarotCards.length * 100
-        }vh] flex flex-col items-center justify-center`}
+        style={{ height: `${TarotCards.length * 100}vh` }}
+        className="relative flex flex-col items-center justify-center z-0"
       >
         {TarotCards.map((_, i) => {
           const start = i / TarotCards.length;
@@ -217,17 +215,17 @@ export default function CardBrowser() {
         })}
       </div>
 
-      <div className="fixed bottom-4 left-0 flex flex-col items-center justify-center px-4 z-50 lg:text-xl w-full leading-tight">
+      <div className="fixed top-4 left-0 flex flex-col items-center justify-center px-4 z-50 lg:text-xl w-full leading-tight">
         {messages.map((m, i) => (
           <TypingText
-            text={m}
             key={i}
-            className="shadow-sm mb-2 font-bold bg-black text-white w-md lg:w-xl"
+            text={m}
+            className="shadow-sm mb-2 font-bold bg-white w-md lg:w-xl"
           />
         ))}
         {loading && (
-          <div className="shadow-sm mb-2 font-bold bg-black text-white w-md lg:w-xl">
-            TarotLady is typing...
+          <div className="shadow-sm mb-2 font-bold bg-white w-md lg:w-xl">
+            Tarot-Göken funderar...
           </div>
         )}
       </div>
