@@ -105,12 +105,11 @@ function ProgressBar({
     damping: 30,
     mass: 0.5,
   });
-
   return (
     <div className="fixed bottom-0 left-0 right-0 p-4 flex items-center justify-center">
-      <motion.div className="h-2 bg-neutral-800 z-50 w-xl rounded-full">
+      <motion.div className="h-2 bg-neutral-800 z-50 w-xl">
         <motion.div
-          className="h-2 bg-blue-800 origin-left rounded-l-full rounded-r-full"
+          className="h-2 bg-blue-800 origin-left "
           style={{ scaleX }}
         />
       </motion.div>
@@ -123,7 +122,13 @@ export default function CardBrowser() {
   const [messages, setMessages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Smooth scrolling
+  // Till Progress bar
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  // Smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -140,12 +145,7 @@ export default function CardBrowser() {
     return () => lenis.destroy();
   }, []);
 
-  // Framer Motion scroll hook — always called
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-
+  // ger instruktioner
   useEffect(() => {
     if (!loading && messages.length === 0) {
       setMessages([
@@ -153,6 +153,8 @@ export default function CardBrowser() {
       ]);
     }
   }, [loading]);
+
+  // När användaren valt kort
 
   const generateTarotMessage = async (card: (typeof TarotCards)[0]) => {
     const prompt = `${SYSTEM_PROMPT}\n\nThe user has drawn "${card.name}". 
@@ -224,9 +226,10 @@ Comment on the ${card.description}. Translate it to modern Swedish and make it i
           />
         ))}
         {loading && (
-          <div className="shadow-sm mb-2 font-bold bg-white w-md lg:w-xl">
-            Tarot-Göken funderar...
-          </div>
+          <TypingText
+            text="Tarot-Göken funderar..."
+            className="shadow-sm mb-2 font-bold bg-white w-md lg:w-xl"
+          />
         )}
       </div>
     </>

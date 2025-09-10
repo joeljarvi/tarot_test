@@ -17,6 +17,7 @@ export default function Tarot() {
 
   return (
     <>
+      {/* START SCREEN  */}
       {!startGame ? (
         <div className="w-full min-h-screen flex flex-col items-center justify-center text-white">
           <h1 className="text-4xl font-bold mb-4">Tarot</h1>
@@ -33,6 +34,7 @@ export default function Tarot() {
           </button>
         </div>
       ) : (
+        // GAME SCREEN
         <CardBrowser />
       )}
     </>
